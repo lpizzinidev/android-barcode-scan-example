@@ -39,6 +39,9 @@ class BarcodeScannerActivity : AppCompatActivity() {
         cameraExecutor.shutdown()
     }
 
+    /**
+     * This function is executed once the user has granted or denied the missing permission
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -48,6 +51,9 @@ class BarcodeScannerActivity : AppCompatActivity() {
         checkIfCameraPermissionIsGranted()
     }
 
+    /**
+     * This function is responsible to request the required CAMERA permission
+     */
     private fun checkCameraPermission() {
         try {
             val requiredPermissions = arrayOf(Manifest.permission.CAMERA)
@@ -57,6 +63,11 @@ class BarcodeScannerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function will check if the CAMERA permission has been granted.
+     * If so, it will call the function responsible to initialize the camera preview.
+     * Otherwise, it will raise an alert.
+     */
     private fun checkIfCameraPermissionIsGranted() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             // Permission granted: start the preview
@@ -64,7 +75,7 @@ class BarcodeScannerActivity : AppCompatActivity() {
         } else {
             // Permission denied
             MaterialAlertDialogBuilder(this)
-                .setTitle("Permission denied")
+                .setTitle("Permission required")
                 .setMessage("This application needs to access the camera to process barcodes")
                 .setPositiveButton("Ok") { _, _ ->
                     // Keep asking for permission until granted
@@ -79,11 +90,13 @@ class BarcodeScannerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function is responsible for the setup of the camera preview and the image analyzer.
+     */
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider = cameraProviderFuture.get()
 
             // Preview
@@ -93,6 +106,7 @@ class BarcodeScannerActivity : AppCompatActivity() {
                     it.setSurfaceProvider(binding.previewView.surfaceProvider)
                 }
 
+            // Image analyzer
             val imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
