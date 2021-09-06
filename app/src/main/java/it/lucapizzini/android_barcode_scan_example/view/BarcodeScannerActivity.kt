@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -21,6 +22,7 @@ import java.util.concurrent.Executors
 class BarcodeScannerActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var barcodeBoxView: BarcodeBoxView
     private lateinit var binding: ActivityBarcodeScannerBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,6 +31,9 @@ class BarcodeScannerActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        barcodeBoxView = BarcodeBoxView(this)
+        addContentView(barcodeBoxView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
         checkCameraPermission()
     }
@@ -111,7 +116,15 @@ class BarcodeScannerActivity : AppCompatActivity() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, QrCodeAnalyzer(this))
+                    it.setAnalyzer(
+                        cameraExecutor,
+                        QrCodeAnalyzer(
+                            this,
+                            barcodeBoxView,
+                            binding.previewView.width.toFloat(),
+                            binding.previewView.height.toFloat()
+                        )
+                    )
                 }
 
             // Select back camera as a default
